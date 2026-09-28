@@ -1,0 +1,22 @@
+{
+  "name": "cooklist-obsidian",
+  "version": "0.1.0",
+  "description": "Obsidian shopping-list workbench over Cooklang CookCLI files: per-store lists, pantry deduction, deal flags.",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production && npm run lint:node",
+    "test": "npm run lint:node && vitest run",
+    "lint:node": "node scripts/check-no-node.mjs"
+  },
+  "keywords": ["obsidian", "cooklang", "shopping-list"],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "esbuild": "^0.24.0",
+    "obsidian": "^1.8.7",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}

@@ -1,0 +1,43 @@
+/* Cooklist Shopping Workbench */
+
+.cooklist-workbench {
+	padding: 8px;
+}
+
+/* Navigation between the three surfaces — thumb-sized targets for in-store use */
+.cooklist-nav {
+	display: flex;
+	gap: 4px;
+	margin-bottom: 8px;
+}
+
+.cooklist-nav-button {
+	flex: 1;
+	padding: 10px 8px;
+	font-size: 14px;
+	border-radius: 6px;
+	background: transparent;
+	border: 1px solid var(--background-modifier-border);
+	color: var(--text-normal);
+	cursor: pointer;
+}
+
+.cooklist-nav-button.is-active {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+}
+
+.cooklist-body {
+	display: flex;
+	flex-direction: column;
+}
+
+.cooklist-surface {
+	padding: 12px 8px;
+	color: var(--text-muted);
+	font-size: 14px;
+	text-align: center;
+	border: 1px dashed var(--background-modifier-border);
+	border-radius: 6px;
+}
