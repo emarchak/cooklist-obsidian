@@ -1,6 +1,5 @@
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import type CooklistPlugin from "./main";
-
 export const VIEW_TYPE_COOKLIST = "cooklist-workbench";
 
 type Surface = "trip" | "list" | "pantry";
@@ -54,7 +53,30 @@ export class WorkbenchView extends ItemView {
 		}
 
 		const body = el.createDiv({ cls: "cooklist-body" });
-		body.createDiv({ cls: "cooklist-surface cooklist-surface-" + this.surface, text: this.placeholderFor(this.surface) });
+		const surfaceEl = body.createDiv({ cls: "cooklist-surface cooklist-surface-" + this.surface });
+		if (this.surface === "list") {
+			this.renderListSurface(surfaceEl);
+		} else {
+			surfaceEl.setText(this.placeholderFor(this.surface));
+		}
+	}
+
+	/** List surface: placeholder for the per-store lists (U5) plus the explicit Complete-trip control (U4). */
+	private renderListSurface(container: HTMLElement): void {
+		if (!this.plugin.settings.lastMenuPath) {
+			container.createDiv({ cls: "cooklist-empty", text: "No active trip — set one up in the Trip tab." });
+			return;
+		}
+		container.createDiv({ cls: "cooklist-empty", text: "Per-store lists will appear here once a trip is set up." });
+		const complete = container.createEl("button", {
+			text: "Complete trip",
+			cls: "cooklist-complete-trip",
+		});
+		complete.addEventListener("click", async () => {
+			await this.plugin.completeActiveTrip();
+			this.surface = "trip";
+			this.renderShell();
+		});
 	}
 
 	private placeholderFor(surface: Surface): string {

@@ -2,11 +2,14 @@ import { Plugin } from "obsidian";
 import { CooklistSettings, DEFAULT_SETTINGS, CooklistSettingTab } from "./settings";
 import { WorkbenchView, VIEW_TYPE_COOKLIST } from "./view";
 import { createParser, type ParseAdapter } from "./engine/parser";
+import { compactCheckedLog } from "./engine/checked";
 
 export default class CooklistPlugin extends Plugin {
 	settings!: CooklistSettings;
 	/** Parser adapter (KTD1) — created at load, WASM primary with TS fallback. */
 	parser: ParseAdapter | null = null;
+	/** Names on the currently generated list; tick compaction reconciles against these. */
+	activeTripListNames: string[] = [];
 
 	async onload() {
 		await this.loadSettings();
@@ -45,5 +48,28 @@ export default class CooklistPlugin extends Plugin {
 
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+	}
+
+	async saveSettings() {
+		await this.saveData(this.settings);
+	}
+
+	/**
+	 * Explicit "Complete trip" action (U4): compacts the tick log against the current list,
+	 * clears the active trip, and returns the workbench to trip setup. Nothing compacts
+	 * automatically; a no-op when no trip is active.
+	 */
+	async completeActiveTrip(): Promise<void> {
+		if (!this.settings.lastMenuPath) return;
+		const checkedPath = `${this.settings.recipeBoxPath}/.shopping-checked`;
+		try {
+			const log = await this.app.vault.adapter.read(checkedPath);
+			await this.app.vault.adapter.write(checkedPath, compactCheckedLog(log, this.activeTripListNames));
+		} catch {
+			// No tick log — completing a trip without ticks just resets the trip.
+		}
+		this.activeTripListNames = [];
+		this.settings.lastMenuPath = "";
+		await this.saveSettings();
 	}
 }
