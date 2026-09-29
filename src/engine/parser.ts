@@ -13,20 +13,20 @@ export interface ParseAdapter {
 }
 
 type WasmQuantity = { value: { type: string; value: unknown } | null; unit: string | null; scalable?: boolean };
-type WasmIngredient = { name: string; quantity: WasmQuantity | null };
-type WasmRecipe = { ingredients: WasmIngredient[]; raw_metadata?: unknown; metadata?: unknown };
+type WasmRecipe = { ingredients: { name: string; quantity: WasmQuantity | null }[]; raw_metadata?: unknown; metadata?: unknown };
 
 function wasmNumber(value: { type: string; value: unknown } | null | undefined): number | null {
 	if (!value) return null;
 	if (value.type === "number") {
 		const inner = value.value as { type?: string; value?: unknown } | undefined;
 		if (inner?.type === "fraction") {
-			// cooklang-rs encodes fractions as whole + err (num/den are degraded); prefer err.
+			// cooklang-rs fraction encoding: value = whole + num/den + err (both parts matter:
+			// water 4.2 = 4 + 0/1 + 0.2; 1.5 tsp rationalized to 0.5 tbsp = 0 + 1/2 − fp noise).
 			const f = inner.value as { whole?: number; num?: number; den?: number; err?: number } | undefined;
 			if (f) {
-				const whole = Number(f.whole ?? 0);
-				const err = Number(f.err ?? 0);
-				return err ? whole + err : whole + Number(f.num ?? 0) / Number(f.den || 1);
+				const raw = Number(f.whole ?? 0) + Number(f.num ?? 0) / Number(f.den || 1) + Number(f.err ?? 0);
+				// Snap away fp noise from the err term before downstream deduction compares.
+				return Math.round(raw * 1e6) / 1e6;
 			}
 		}
 		const n = Number(inner?.value);
@@ -56,20 +56,41 @@ function scaleQuantity(value: number | null, unit: string | null, scale: number)
 	};
 }
 
+/** Units stay exactly as written in the conf (raw spelling is the contract — cookcli compares
+ * and emits units raw; see the oracle suite). */
+export function canonicalUnit(unit: string | null | undefined): string | null {
+	return unit ? unit.trim().toLowerCase() : null;
+}
+/**
+ * Units stay raw — KTD2 makes the cookcli CLI the oracle and it compares/emits units as
+ * written ("cups", "1.5 tsp"). The scaled `Parser.parse` normalizes (cups→c, 1.5 tsp→0.5
+ * tbsp), so ingredients come from `parse_full(json)` — the raw layer — and the adapter
+ * applies the scale itself, honoring each quantity's `scalable` flag for fixed `=` amounts.
+ */
 class WasmAdapter implements ParseAdapter {
 	readonly id = "wasm" as const;
 
-	constructor(private parser: { parse(text: string, scale?: number | null): { recipe: WasmRecipe; metadata?: unknown } }) {}
+	constructor(
+		private parser: {
+			parse(text: string, scale?: number | null): { recipe: WasmRecipe; metadata?: unknown };
+			parse_full(input: string, json: boolean): unknown;
+		}
+	) {}
 
 	parse(text: string, scale: number): ParsedRecipe {
 		const result = this.parser.parse(text, scale);
-		const ingredients: ParsedIngredient[] = (result.recipe.ingredients ?? []).map((ing) => ({
-			name: ing.name,
-			quantity: ing.quantity ? scaleQuantity(wasmNumber(ing.quantity.value), ing.quantity.unit ?? null, 1) : null,
-		}));
 		const metadata = metadataToRecord(result.recipe.raw_metadata ?? result.recipe.metadata);
-		// The WASM parser applies the factor at parse time (fixed `=` quantities included in
-		// that rule — verified by test), so quantities above are already correctly scaled.
+
+		const full = this.parser.parse_full(text, true) as { value?: string };
+		const json = JSON.parse(full.value ?? "{}") as {
+			ingredients?: { name: string; quantity: WasmQuantity | null }[];
+		};
+		const ingredients: ParsedIngredient[] = (json.ingredients ?? []).map((ing) => {
+			if (!ing.quantity) return { name: ing.name, quantity: null };
+			const value = wasmNumber(ing.quantity.value);
+			const scaled = value === null ? null : ing.quantity.scalable === false ? value : value * scale;
+			return { name: ing.name, quantity: scaleQuantity(scaled, ing.quantity.unit ?? null, 1) };
+		});
 		return { ingredients, metadata, scale };
 	}
 }

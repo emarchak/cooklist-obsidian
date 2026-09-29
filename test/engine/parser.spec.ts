@@ -58,7 +58,9 @@ describe("parser adapters (KTD1)", () => {
 		// merging (the cookcli JSON oracle defines the canonical forms).
 		const wasm = await createParser("wasm");
 		expect(qtyOf(wasm.parse(kokumaro(), 1), "water")?.value).toBeCloseTo(4.2);
-		expect(qtyOf(wasm.parse(kokumaro(), 1), "water")?.unit).toBe("c");
+		// Adapters post-map cooklang-rs's cups→c normalization back to raw spelling, matching
+		// what the CLI oracle emits (verified against cookcli 0.35.0).
+		expect(qtyOf(wasm.parse(kokumaro(), 1), "water")?.unit).toBe("cups");
 		const ts = await createParser("ts");
 		expect(qtyOf(ts.parse(kokumaro(), 1), "water")?.value).toBeCloseTo(4.2);
 		expect(qtyOf(ts.parse(kokumaro(), 1), "water")?.unit).toBe("cups");
