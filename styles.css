@@ -58,3 +58,25 @@
 	color: var(--text-muted);
 	padding: 12px 4px;
 }
+
+/* Trip setup (U5) */
+.cooklist-field { margin-bottom: 14px; }
+.cooklist-field > label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+.cooklist-input { width: 100%; padding: 10px 12px; min-height: 44px; font-size: 15px; }
+.cooklist-store-row { display: flex; align-items: center; gap: 8px; padding: 8px 4px; min-height: 44px; }
+.cooklist-store-row input[type="checkbox"], .cooklist-store-row input[type="radio"] { width: 20px; height: 20px; }
+.cooklist-home-label { margin-left: auto; font-size: 12px; color: var(--text-muted); }
+.cooklist-start-trip { width: 100%; padding: 12px 16px; margin-top: 12px; font-size: 16px; border-radius: 8px; min-height: 48px; }
+
+/* Per-store lists (U5) */
+.cooklist-store { margin-bottom: 18px; }
+.cooklist-store-name { font-size: 16px; margin: 8px 0 6px; border-bottom: 1px solid var(--background-modifier-border); padding-bottom: 4px; }
+.cooklist-item { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 4px; min-height: 44px; border-bottom: 1px dashed var(--background-modifier-border); }
+.cooklist-item input[type="checkbox"] { width: 22px; height: 22px; flex-shrink: 0; }
+.cooklist-item.is-ticked .cooklist-item-name span { text-decoration: line-through; opacity: 0.55; }
+.cooklist-item-name { font-size: 15px; }
+.cooklist-item-qty { font-size: 13px; color: var(--text-muted); margin-left: auto; }
+.cooklist-deal { display: flex; gap: 8px; width: 100%; font-size: 12px; margin-top: 2px; }
+.cooklist-deal-store { color: var(--text-accent); font-weight: 600; }
+.cooklist-deal-price { color: var(--text-accent); }
+.cooklist-deal-suspect { color: var(--text-warning); }
