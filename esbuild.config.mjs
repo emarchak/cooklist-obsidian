@@ -1,5 +1,6 @@
 import esbuild from "esbuild";
 import process from "process";
+import { esbuildWasmInline } from "./scripts/wasm-inline.mjs";
 
 const production = process.argv[2] === "production";
 
@@ -9,6 +10,7 @@ const context = await esbuild.context({
 	outfile: "main.js",
 	format: "cjs",
 	target: "es2018",
+	plugins: [esbuildWasmInline],
 	external: [
 		"obsidian",
 		"electron",
