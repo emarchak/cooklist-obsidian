@@ -25,3 +25,12 @@ describe("manifest", () => {
 		expect(min).toBeGreaterThanOrEqual(10800);
 	});
 });
+describe("built bundle (U7: mobile hardening)", () => {
+	it("contains the base64-inlined wasm and no external wasm reference", () => {
+		const bundle = readFileSync(join(root, "main.js"), "utf8");
+		// wasm-inline emits base64; a wasm-pack bundler-target build would reference a .wasm file
+		expect(bundle).toMatch(/AGFzbQ/); // base64 of "\0asm" magic
+		expect(bundle).not.toMatch(/cooklang_wasm_bg\.wasm/);
+		expect(bundle).not.toMatch(/import\.meta\.url/);
+	});
+});
