@@ -80,3 +80,10 @@
 .cooklist-deal-store { color: var(--text-accent); font-weight: 600; }
 .cooklist-deal-price { color: var(--text-accent); }
 .cooklist-deal-suspect { color: var(--text-warning); }
+
+/* Pantry surface (U6) */
+.cooklist-pantry-add { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--background-modifier-border); }
+.cooklist-input-inline { flex: 1 1 130px; min-width: 110px; padding: 8px 10px; min-height: 40px; }
+.cooklist-add-item, .cooklist-remove-item { padding: 8px 14px; border-radius: 8px; min-height: 40px; }
+.cooklist-remove-item { min-width: 40px; padding: 4px 10px; color: var(--text-error); font-size: 16px; }
+.cooklist-pantry-row { min-height: 40px; }
