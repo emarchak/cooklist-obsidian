@@ -10,6 +10,8 @@ export interface CooklistSettings {
 	homeStore: string;
 	/** Vault-relative path of the menu used for the most recent trip. */
 	lastMenuPath: string;
+	/** Stores picked for the most recent trip. */
+	lastStores: string[];
 }
 
 export const DEFAULT_SETTINGS: CooklistSettings = {
@@ -17,6 +19,7 @@ export const DEFAULT_SETTINGS: CooklistSettings = {
 	stores: ["Fiesta Farms", "Loblaws", "Farm Boy", "Pat Central"],
 	homeStore: "",
 	lastMenuPath: "",
+	lastStores: [],
 };
 
 export class CooklistSettingTab extends PluginSettingTab {
